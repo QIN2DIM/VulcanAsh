@@ -10,7 +10,7 @@ test_group = []
 
 output_file_general = "test_one_step_spider.txt"
 output_file_speedup = "test_speedup_spider.txt"
-with open("seed_url.txt", "r", encoding="utf8") as f_:
+with open("seed_url.txt", "r", encodinpipg="utf8") as f_:
     TASK_DOCKER = [i.strip() for i in f_.read().split("\n") if i]
     random.shuffle(TASK_DOCKER)
 with open(output_file_general, "w", encoding="utf8") as f_g:

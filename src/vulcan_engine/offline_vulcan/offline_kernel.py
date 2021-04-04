@@ -1,13 +1,18 @@
+__all__ = ["OfflineCoroutineSpeedup"]
+
+
 from functools import wraps
 from typing import List
 
 import gevent
 from gevent import monkey
 
-monkey.patch_all(ssl=False)
 from gevent.queue import Queue
 
 import logging
+import os
+
+monkey.patch_all(ssl=False)
 
 
 class OfflineCoroutineSpeedup(object):

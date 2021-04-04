@@ -168,19 +168,18 @@ class AsyncPool(object):
 
 
 class AsyncCoroutineSpeedup(object):
-    max_queue_size: int = 8
     queue = None
-    power: int = None
+    power: int = 8
     debug_logger: bool = True
 
-    def __init__(self, power: int = None, debug: bool = True):
+    def __init__(self, power: int = 8, debug: bool = True):
         # 协程数
         self.__class__.power = power
         # 是否打印日志信息
         self.__class__.debug_logger = debug
         if not self.__class__.queue:
-            self.__class__.queue = AsyncPool(maxsize=self.__class__.max_queue_size)
-        logging.info(f'<Gevent> class initialize completed -- <{self.__class__.__name__}>')
+            self.__class__.queue = AsyncPool(maxsize=self.__class__.power)
+        # logging.info(f'<Gevent> class initialize completed -- <{self.__class__.__name__}>')
 
     @classmethod
     def __call__(cls, func):
@@ -201,36 +200,3 @@ class AsyncCoroutineSpeedup(object):
     @classmethod
     def killer(cls):
         pass
-
-
-import requests
-from bs4 import BeautifulSoup
-test_group = []
-
-
-@AsyncCoroutineSpeedup()
-def test_business(html: str = "http://www.ylshuo.com/article/310000.html"):
-    res = requests.get(html)
-    res.encoding = res.apparent_encoding
-    soup = BeautifulSoup(res.text, "html.parser")
-
-    batch = [i.text.strip() for i in soup.find("div", class_="g-detail-font").find_all("p")]
-
-    title = soup.find("h1").text
-    content = batch[1:]
-
-    test_group.append("title:{}\ncontent:{}\nsource:{}\n\n".format(title, "$".join(content), html))
-
-
-"""===========================================启动接口==========================================="""
-
-if __name__ == '__main__':
-    html_list = [
-        "http://www.ylshuo.com/article/310000.html",
-        "http://www.ylshuo.com/article/310010.html",
-    ]
-    for html_item in html_list:
-        test_business(html_item)
-
-    for item in test_group:
-        print(item)

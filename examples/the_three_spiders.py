@@ -73,7 +73,6 @@ def test_business(html: str = "http://www.ylshuo.com/article/310000.html"):
 """===========================================启动接口==========================================="""
 
 if __name__ == '__main__':
-    pool = AsyncPool()
     html_list = [
         "http://www.ylshuo.com/article/310000.html",
         "http://www.ylshuo.com/article/310010.html",

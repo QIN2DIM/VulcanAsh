@@ -162,7 +162,8 @@ class AsyncPool(object):
         future = asyncio.run_coroutine_threadsafe(self.async_semaphore_func(func), self.loop)
 
         # 添加回调函数,添加顺序调用
-        future.add_done_callback(callback)
+        if callback:
+            future.add_done_callback(callback)
         future.add_done_callback(self.task_done)
 
 
@@ -193,10 +194,43 @@ class AsyncCoroutineSpeedup(object):
 
     @classmethod
     def control_driver(cls, task):
-        cls.control_driver.__name__ = "control_driver"
+        # cls.control_driver.__name__ = "control_driver"
         task['function'](*task['param'][0], **task['param'][1])
         pass
 
     @classmethod
     def killer(cls):
         pass
+
+
+import requests
+from bs4 import BeautifulSoup
+test_group = []
+
+
+@AsyncCoroutineSpeedup()
+def test_business(html: str = "http://www.ylshuo.com/article/310000.html"):
+    res = requests.get(html)
+    res.encoding = res.apparent_encoding
+    soup = BeautifulSoup(res.text, "html.parser")
+
+    batch = [i.text.strip() for i in soup.find("div", class_="g-detail-font").find_all("p")]
+
+    title = soup.find("h1").text
+    content = batch[1:]
+
+    test_group.append("title:{}\ncontent:{}\nsource:{}\n\n".format(title, "$".join(content), html))
+
+
+"""===========================================启动接口==========================================="""
+
+if __name__ == '__main__':
+    html_list = [
+        "http://www.ylshuo.com/article/310000.html",
+        "http://www.ylshuo.com/article/310010.html",
+    ]
+    for html_item in html_list:
+        test_business(html_item)
+
+    for item in test_group:
+        print(item)

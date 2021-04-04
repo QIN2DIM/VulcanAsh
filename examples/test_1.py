@@ -41,6 +41,7 @@ class AsyncPool(object):
 
         # 协程池
         self.loop, _ = self.start_loop(loop)
+
         # 限制并发量为500
         self.semaphore = asyncio.Semaphore(maxsize, loop=self.loop)
 
@@ -185,7 +186,7 @@ def my_callback(future):
 def main():
     # 任务组， 最大协程数
     pool = AsyncPool(maxsize=100000)
-    
+
     print('initialize successfully')
     return
 

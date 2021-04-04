@@ -55,8 +55,8 @@ def capture_flow(func):
 """===========================================测试业务==========================================="""
 
 
-# @task_timer
-@AsyncCoroutineSpeedup()
+@task_timer
+@AsyncCoroutineSpeedup(power=64)
 def test_business(html: str = "http://www.ylshuo.com/article/310000.html"):
     res = requests.get(html)
     res.encoding = res.apparent_encoding
@@ -73,12 +73,9 @@ def test_business(html: str = "http://www.ylshuo.com/article/310000.html"):
 """===========================================启动接口==========================================="""
 
 if __name__ == '__main__':
-    html_list = [
-        "http://www.ylshuo.com/article/310000.html",
-        "http://www.ylshuo.com/article/310010.html",
-    ]
-    for html_item in html_list:
-        test_business(html_item)
+    html_format = "http://www.ylshuo.com/article/{}.html"
 
-    # for x in test_group:
-    #     print(x)
+    for page in range(310000, 310101):
+        test_business(html_format.format(page))
+
+    print(len(test_group))

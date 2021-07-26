@@ -13,6 +13,8 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
+from src.vulcan_engine.vulcan.vulcan_kernel import VulcanCoroutineSpeedup
+
 logging.getLogger().setLevel(logging.INFO)
 
 from src.vulcan_engine.async_vulcan.async_kernel import AsyncCoroutineSpeedup
@@ -56,7 +58,7 @@ def capture_flow(func):
 
 
 @task_timer
-@AsyncCoroutineSpeedup(power=64)
+@VulcanCoroutineSpeedup(power=16)
 def test_business(html: str = "http://www.ylshuo.com/article/310000.html"):
     res = requests.get(html)
     res.encoding = res.apparent_encoding

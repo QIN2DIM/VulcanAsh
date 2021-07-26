@@ -5,18 +5,20 @@
 
 __author__ = "BeiYu"
 
+import asyncio
 import logging
 
 import random
 import time
 
+import aiohttp
 import requests
 from bs4 import BeautifulSoup
 
 # logging.getLogger().setLevel(logging.INFO)
 
-from src.vulcan_engine.async_vulcan.async_kernel import AsyncCoroutineSpeedup
 from src.vulcan_engine.offline_vulcan.offline_kernel import OfflineCoroutineSpeedup
+from src.vulcan_engine.vulcan.vulcan_kernel import VulcanCoroutineSpeedup
 
 """===========================================全局变量=========================================="""
 test_group = []
@@ -42,6 +44,15 @@ def task_timer(func):
     return wrapper
 
 
+def async_task_timer(func):
+    async def wrapper(*args, **kwargs):
+        start_ = time.time()
+        await func(*args, **kwargs)
+        print(f"---> {func.__name__} | {round(time.time() - start_, 3)}s")
+
+    return wrapper
+
+
 def capture_flow(func):
     def wrapper(*args, **kwargs):
         func(*args, **kwargs)
@@ -56,8 +67,8 @@ def capture_flow(func):
 """===========================================测试业务==========================================="""
 
 
-@AsyncCoroutineSpeedup(power=1000, debug=False)
-def test_vulcan_business(html: str = "http://www.ylshuo.com/article/310000.html"):
+@VulcanCoroutineSpeedup(power=16, debug=False)
+def test_vulcan_sync_business(html: str = "http://www.ylshuo.com/article/310000.html"):
     res = requests.get(html)
     res.encoding = res.apparent_encoding
     soup = BeautifulSoup(res.text, "html.parser")
@@ -67,6 +78,7 @@ def test_vulcan_business(html: str = "http://www.ylshuo.com/article/310000.html"
     title = soup.find("h1").text
     content = batch[1:]
 
+    # print(f'{html}')
     test_group.append("title:{}\ncontent:{}\nsource:{}\n\n".format(title, "$".join(content), html))
 
 
@@ -131,10 +143,22 @@ def launcher_vulcan(task_list, power_=1):
     VulcanEngine(task_docker=task_list, power=power_).interface()
 
 
-@task_timer
-def launcher_asyncvulcan(html_list):
+# @async_task_timer
+async def launcher_asyncvulcan(html_list):
     for item in html_list:
-        test_vulcan_business(item)
+        await test_vulcan_business(item)
+
+    # for item in test_group:
+    # print(item)
+
+
+@task_timer
+def launcher_syncvulcan(html_list):
+    for item in html_list:
+        test_vulcan_sync_business(item)
+
+    # for i in test_group:
+    #     print(i)
 
 
 @task_timer
@@ -147,7 +171,8 @@ def launcher_offlinevulcan(html_list):
 
 if __name__ == '__main__':
     print('init')
-    launcher_asyncvulcan(TASK_DOCKER[:100])
+
+    launcher_syncvulcan(TASK_DOCKER[:100])
     launcher_offlinevulcan(TASK_DOCKER[:100])
-    launcher_vulcan(TASK_DOCKER[:100], power_=16)
-    launcher_general(TASK_DOCKER[:100])
+
+    # print(test_group)
